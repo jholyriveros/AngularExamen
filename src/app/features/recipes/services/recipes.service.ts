@@ -30,7 +30,7 @@ export class RecipesService {
 
   getAll(): Observable<Recipe[]> {
     return this.http.get<any[]>(this.baseUrl)
-      .pipe(map(arr => (arr || []).map(item => this.normalize(item))));
+      .pipe(map(arr => (arr || []).map(item => this.normalize(item))));//
   }
 
   getById(id: number): Observable<Recipe> {
@@ -38,13 +38,13 @@ export class RecipesService {
       .pipe(map(item => this.normalize(item)));
   }
 
-  create(payload: RecipeRequest): Observable<Recipe> {
-    return this.http.post<any>(this.baseUrl, payload)
+  create(request: RecipeRequest): Observable<Recipe> {
+    return this.http.post<any>(this.baseUrl, request)
       .pipe(map(item => this.normalize(item)));
   }
 
-  update(id: number, payload: RecipeRequest): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, payload);
+  update(id: number, request: RecipeRequest): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, request);
   }
 
   delete(id: number): Observable<any> {

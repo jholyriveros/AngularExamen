@@ -16,11 +16,12 @@ declare var bootstrap: any;
   imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf],
   templateUrl: './recipes-list.component.html'
 })
+
 export class RecipesListComponent implements OnInit {
   recipes: Recipe[] = [];
-  paginatedRecipes: Recipe[] = []; 
-  page = 1;                      
-  pageSize = 5;  
+  paginatedRecipes: Recipe[] = [];
+  page = 1;
+  pageSize = 5;
   totalPages = 1;
   categories: Categoria[] = [];
   form!: FormGroup;
@@ -35,8 +36,8 @@ export class RecipesListComponent implements OnInit {
     private fb: FormBuilder,
     private recipesService: RecipesService,
     private categoriaService: CategoriaService,
-    private toast: ToastService //
-  ) {}
+    private toast: ToastService
+  ) { }
 
   ngOnInit(): void {
     this.loadRecipes();
@@ -56,7 +57,6 @@ export class RecipesListComponent implements OnInit {
     this.categoriaService.getAll().subscribe({
       next: (data) => (this.categories = data),
       error: (err) => {
-        console.error('Error cargando categorías', err);
         this.toast.show('❌ Error cargando categorías', 'danger');
       }
     });
@@ -72,40 +72,39 @@ export class RecipesListComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando recetas', err);
         this.toast.show('❌ Error cargando recetas', 'danger');
         this.loading = false;
       }
     });
   }
 
-onFilterCategoryChange(event: any) {
-  this.filterCategoryId = event.target.value;
-  this.setPage(1);
-}
+  onFilterCategoryChange(event: any) {
+    this.filterCategoryId = event.target.value;
+    this.setPage(1);
+  }
 
-get filteredRecipes(): Recipe[] {
-  const categoryId = this.filterCategoryId ? +this.filterCategoryId : null;
-  return this.recipes
-    .filter(r =>
-      (!this.filterName || r.nombre.toLowerCase().includes(this.filterName.toLowerCase())) &&
-      (!categoryId || r.categoriaId === categoryId)
-    );
-}
+  get filteredRecipes(): Recipe[] {
+    const categoryId = this.filterCategoryId ? +this.filterCategoryId : null;
+    return this.recipes
+      .filter(r =>
+        (!this.filterName || r.nombre.toLowerCase().includes(this.filterName.toLowerCase())) &&
+        (!categoryId || r.categoriaId === categoryId)
+      );
+  }
 
-setPage(page: number): void {
-  const filtered = this.filteredRecipes;
-  this.totalPages = Math.ceil(filtered.length / this.pageSize) || 1; 
+  setPage(page: number): void {
+    const filtered = this.filteredRecipes;
+    this.totalPages = Math.ceil(filtered.length / this.pageSize) || 1;
 
-  if (page < 1) page = 1;
-  if (page > this.totalPages) page = this.totalPages;
+    if (page < 1) page = 1;
+    if (page > this.totalPages) page = this.totalPages;
 
-  this.page = page;
+    this.page = page;
 
-  const start = (page - 1) * this.pageSize;
-  const end = start + this.pageSize;
-  this.paginatedRecipes = filtered.slice(start, end);
-}
+    const start = (page - 1) * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedRecipes = filtered.slice(start, end);
+  }
 
   startCreate(): void {
     this.editing = false;
@@ -152,7 +151,6 @@ setPage(page: number): void {
           this.toast.show('✏️ Receta actualizada correctamente', 'success');
         },
         error: (err) => {
-          console.error('Error actualizando receta', err);
           this.toast.show('❌ Error actualizando la receta', 'danger');
         }
       });
@@ -164,7 +162,6 @@ setPage(page: number): void {
           this.toast.show('📂 Receta creada correctamente', 'success');
         },
         error: (err) => {
-          console.error('Error creando receta', err);
           this.toast.show('❌ Error creando la receta', 'danger');
           if (err.error?.errors) {
             console.error('Validation errors:', err.error.errors);
@@ -174,18 +171,17 @@ setPage(page: number): void {
     }
   }
 
-confirmDelete(recipe: Recipe): void {
-  this.recipesService.delete(recipe.id).subscribe({
-    next: () => {
-      this.loadRecipes();
-      this.toast.show('✅ Receta eliminada correctamente', 'success');
-    },
-    error: (err) => {
-      console.error('Error eliminando receta', err);
-      this.toast.show('❌ Error eliminando la receta', 'danger');
-    }
-  });
-}
+  confirmDelete(recipe: Recipe): void {
+    this.recipesService.delete(recipe.id).subscribe({
+      next: () => {
+        this.loadRecipes();
+        this.toast.show('✅ Receta eliminada correctamente', 'success');
+      },
+      error: (err) => {
+        this.toast.show('❌ Error eliminando la receta', 'danger');
+      }
+    });
+  }
 
   private openModal(): void {
     const modalElement = document.getElementById('recipeModal');
@@ -213,6 +209,6 @@ confirmDelete(recipe: Recipe): void {
   }
 
   openPhoto(recipe: any) {
-  this.selectedRecipe = recipe;
-}
+    this.selectedRecipe = recipe;
+  }
 }
