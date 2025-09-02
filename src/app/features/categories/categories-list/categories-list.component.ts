@@ -100,7 +100,7 @@ export class CategoriesListComponent implements OnInit {
     this.categoriaService.delete(cat.id).subscribe({
       next: () => {
         this.loadCategorias();
-        this.toast.show('✅ Categoría eliminada correctamente', 'success'); // 👈 usamos servicio
+        this.toast.show('✅ Categoría eliminada correctamente', 'success');
       },
       error: (err) => {
         console.error('Error eliminando categoría', err);

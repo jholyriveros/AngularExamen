@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { provideRouter } from '@angular/router';
 import { CategoriesListComponent } from './features/categories/categories-list/categories-list.component';
 import { CategoryDetailsComponent } from './features/categories/category-details/category-details.component';
 import { RecipesListComponent } from './features/recipes/recipes-list/recipes-list.component';

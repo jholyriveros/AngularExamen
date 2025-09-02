@@ -1,63 +1,152 @@
-<div class="p-4">
-  <h2 class="text-xl font-bold mb-4">Recetas</h2>
+<div class="container mt-4">
+  <h2 class="mb-4">Recetas</h2>
 
-  <button (click)="startCreate()" class="mb-4 px-4 py-2 bg-blue-500 rounded">
-    Nueva Receta
-  </button>
+<button (click)="startCreate()" class="btn btn-primary mb-3">
+  Nueva Receta
+</button>
 
-  <div *ngIf="loading">Cargando recetas...</div>
-  <div *ngIf="!loading && recipes.length === 0">No hay recetas.</div>
+  <div *ngIf="loading" class="alert alert-info">Cargando recetas...</div>
+  <div *ngIf="!loading && recipes.length === 0" class="alert alert-secondary">No hay recetas.</div>
 
-  <ul *ngIf="!loading && recipes.length > 0" class="space-y-2">
-    <li *ngFor="let recipe of recipes; trackBy: trackById" class="p-3 border rounded">
-      <h3 class="font-semibold">{{ recipe.nombre }}</h3>
-      <p class="text-sm text-gray-600">Tiempo: {{ recipe.tiempoPreparacion }} min</p>
-      <div class="mt-2 space-x-2">
-        <button (click)="startEdit(recipe)" class="px-2 py-1 bg-yellow-500 rounded">Editar</button>
-        <button (click)="confirmDelete(recipe)" class="px-2 py-1 bg-red-500 rounded">Eliminar</button>
-      </div>
+  <!-- Tabla -->
+  <div *ngIf="!loading && recipes.length > 0" class="table-responsive">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light">
+        <tr>
+          <th scope="col" style="width: 5%">#</th>
+          <th scope="col">Nombre</th>
+          <th scope="col" style="width: 15%">Tiempo (min)</th>
+          <th scope="col" style="width: 15%">Categoría</th>
+          <th scope="col" style="width: 15%">Descripción</th>
+          <th scope="col" style="width: 20%">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let recipe of paginatedRecipes; index as i; trackBy: trackById">
+          <td class="text-center">{{ (page - 1) * pageSize + i + 1 }}</td>
+          <td>{{ recipe.nombre }}</td>
+          <td class="text-center">{{ recipe.tiempoPreparacion }}</td>
+          <td class="text-center">{{ recipe.categoria?.nombre }}</td>
+          <td class="text-center">{{ recipe.descripcion }}</td>
+          <td class="text-center">
+            <button (click)="startEdit(recipe)" class="btn btn-sm btn-warning me-2">Editar</button>
+            <button class="btn btn-sm btn-danger"
+                    data-bs-toggle="modal"
+                    [attr.data-bs-target]="'#deleteRecipeModal' + recipe.id">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginación -->
+<nav *ngIf="totalPages > 1" aria-label="Page navigation" class="mt-3">
+  <ul class="pagination justify-content-center">
+    <li class="page-item" [class.disabled]="page === 1">
+      <button class="page-link" (click)="setPage(page - 1)">Anterior</button>
+    </li>
+
+    <li class="page-item"
+        *ngFor="let p of [].constructor(totalPages); let idx = index"
+        [class.active]="page === idx + 1">
+      <button class="page-link" (click)="setPage(idx + 1)">
+        {{ idx + 1 }}
+      </button>
+    </li>
+
+    <li class="page-item" [class.disabled]="page === totalPages">
+      <button class="page-link" (click)="setPage(page + 1)">Siguiente</button>
     </li>
   </ul>
+</nav>
+</div>
 
-  <!-- Formulario -->
-  <div *ngIf="showForm" class="mt-6 p-4 border rounded bg-gray-50">
-    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
-      <div>
-        <label class="block">Nombre</label>
-        <input formControlName="nombre" class="border p-2 w-full" />
+
+<!-- Modal Crear/Editar -->
+<div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="recipeModalLabel">
+          {{ editing ? 'Editar Receta' : 'Nueva Receta' }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
+      <div class="modal-body">
+        <form [formGroup]="form" (ngSubmit)="submit()">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input formControlName="nombre" class="form-control" />
+          </div>
 
-      <div>
-        <label class="block">Ingredientes</label>
-        <textarea formControlName="ingredientes" class="border p-2 w-full"></textarea>
+          <div class="mb-3">
+            <label class="form-label">Ingredientes</label>
+            <textarea formControlName="ingredientes" class="form-control"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Tiempo preparación (min)</label>
+            <input type="number" formControlName="tiempoPreparacion" class="form-control" />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Categoría</label>
+            <select formControlName="categoriaId" class="form-select">
+              <option value="" disabled selected>Seleccione una categoría</option>
+              <option *ngFor="let cat of categories" [value]="cat.id">
+                {{ cat.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea formControlName="descripcion" class="form-control"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Foto URL</label>
+            <input formControlName="fotoUrl" class="form-control" />
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+              {{ editing ? 'Actualizar' : 'Crear' }}
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
       </div>
+    </div>
+  </div>
+</div>
 
-      <div>
-        <label class="block">Tiempo preparación (min)</label>
-        <input type="number" formControlName="tiempoPreparacion" class="border p-2 w-full" />
+<!-- Modal Confirmación Eliminar -->
+<div *ngFor="let recipe of recipes" class="modal fade"
+     [id]="'deleteRecipeModal' + recipe.id"
+     tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmar eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-
-      <div>
-        <label class="block">Categoría ID</label>
-        <input type="number" formControlName="categoriaId" class="border p-2 w-full" />
+      <div class="modal-body">
+        ¿Estás seguro que deseas eliminar la receta
+        <strong>{{ recipe.nombre }}</strong>?
       </div>
-
-      <div>
-        <label class="block">Descripción</label>
-        <textarea formControlName="descripcion" class="border p-2 w-full"></textarea>
-      </div>
-
-      <div>
-        <label class="block">Foto URL</label>
-        <input formControlName="fotoUrl" class="border p-2 w-full" />
-      </div>
-
-      <div class="flex space-x-2">
-        <button type="submit" class="px-4 py-2 bg-green-600 rounded">
-          {{ editing ? 'Actualizar' : 'Crear' }}
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger"
+                (click)="confirmDelete(recipe)"
+                data-bs-dismiss="modal">
+          Sí, eliminar
         </button>
-        <button type="button" (click)="cancel()" class="px-4 py-2 bg-gray-500 rounded">Cancelar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
       </div>
-    </form>
+    </div>
   </div>
 </div>
