@@ -8,32 +8,43 @@
   <div *ngIf="loading" class="alert alert-info">Cargando recetas...</div>
   <div *ngIf="!loading && recipes.length === 0" class="alert alert-secondary">No hay recetas.</div>
 
-  <!-- Tabla -->
   <div *ngIf="!loading && recipes.length > 0" class="table-responsive">
     <table class="table table-bordered table-striped align-middle">
       <thead class="table-light">
         <tr>
-          <th scope="col" style="width: 5%">#</th>
-          <th scope="col">Nombre</th>
-          <th scope="col" style="width: 15%">Tiempo (min)</th>
-          <th scope="col" style="width: 15%">Categoría</th>
-          <th scope="col" style="width: 15%">Descripción</th>
-          <th scope="col" style="width: 20%">Acciones</th>
+          <th scope="col" style="width: 5%" class="text-center">#</th>
+          <th scope="col" class="text-center">Nombre</th>
+          <th scope="col" style="width: 15%" class="text-center">Tiempo (min)</th>
+          <th scope="col" style="width: 15%" class="text-center">Categoría</th>
+          <th scope="col" style="width: 15%" class="text-center">Descripción</th>
+          <th scope="col" style="width: 20%" class="text-center">Acciones</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let recipe of paginatedRecipes; index as i; trackBy: trackById">
           <td class="text-center">{{ (page - 1) * pageSize + i + 1 }}</td>
-          <td>{{ recipe.nombre }}</td>
+          <td class="text-center">{{ recipe.nombre }}</td>
           <td class="text-center">{{ recipe.tiempoPreparacion }}</td>
           <td class="text-center">{{ recipe.categoria?.nombre }}</td>
           <td class="text-center">{{ recipe.descripcion }}</td>
           <td class="text-center">
-            <button (click)="startEdit(recipe)" class="btn btn-sm btn-warning me-2">Editar</button>
+            <button class="btn btn-sm btn-info me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#photoModal"
+                    (click)="openPhoto(recipe)"
+                    title="Ver foto">
+              <i class="bi bi-image"></i>
+            </button>
+
+            <button (click)="startEdit(recipe)" class="btn btn-sm btn-warning me-2" title="Editar">
+              <i class="bi bi-pencil-square"></i>
+            </button>
+
             <button class="btn btn-sm btn-danger"
                     data-bs-toggle="modal"
-                    [attr.data-bs-target]="'#deleteRecipeModal' + recipe.id">
-              Eliminar
+                    [attr.data-bs-target]="'#deleteRecipeModal' + recipe.id"
+                    title="Eliminar">
+              <i class="bi bi-trash"></i>
             </button>
           </td>
         </tr>
@@ -63,6 +74,22 @@
 </nav>
 </div>
 
+<!-- Modal para mostrar foto -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content" *ngIf="selectedRecipe">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">📷 {{ selectedRecipe.nombre }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img [src]="selectedRecipe.fotoUrl"
+             class="img-fluid rounded shadow"
+             alt="Foto de {{ selectedRecipe.nombre }}">
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Crear/Editar -->
 <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true">
@@ -76,48 +103,82 @@
       </div>
       <div class="modal-body">
         <form [formGroup]="form" (ngSubmit)="submit()">
-          <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input formControlName="nombre" class="form-control" />
+        <!-- Nombre -->
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input formControlName="nombre" class="form-control"
+                [class.is-invalid]="form.get('nombre')?.invalid && form.get('nombre')?.touched" />
+          <div *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched" class="invalid-feedback">
+            <div *ngIf="form.get('nombre')?.hasError('required')">El nombre es obligatorio</div>
+            <div *ngIf="form.get('nombre')?.hasError('maxlength')">Máximo 100 caracteres</div>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Ingredientes</label>
-            <textarea formControlName="ingredientes" class="form-control"></textarea>
+        <!-- Ingredientes -->
+        <div class="mb-3">
+          <label class="form-label">Ingredientes</label>
+          <textarea formControlName="ingredientes" class="form-control"
+                    [class.is-invalid]="form.get('ingredientes')?.invalid && form.get('ingredientes')?.touched"></textarea>
+          <div *ngIf="form.get('ingredientes')?.invalid && form.get('ingredientes')?.touched" class="invalid-feedback">
+            Los ingredientes son obligatorios
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Tiempo preparación (min)</label>
-            <input type="number" formControlName="tiempoPreparacion" class="form-control" />
+        <!-- Tiempo preparación -->
+        <div class="mb-3">
+          <label class="form-label">Tiempo preparación (min)</label>
+          <input type="number" formControlName="tiempoPreparacion" class="form-control"
+                [class.is-invalid]="form.get('tiempoPreparacion')?.invalid && form.get('tiempoPreparacion')?.touched" />
+          <div *ngIf="form.get('tiempoPreparacion')?.invalid && form.get('tiempoPreparacion')?.touched" class="invalid-feedback">
+            <div *ngIf="form.get('tiempoPreparacion')?.hasError('required')">El tiempo es obligatorio</div>
+            <div *ngIf="form.get('tiempoPreparacion')?.hasError('min')">Debe ser mayor a 0</div>
+            <div *ngIf="form.get('tiempoPreparacion')?.hasError('max')">Máximo 1440 (1 día)</div>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Categoría</label>
-            <select formControlName="categoriaId" class="form-select">
-              <option value="" disabled selected>Seleccione una categoría</option>
-              <option *ngFor="let cat of categories" [value]="cat.id">
-                {{ cat.nombre }}
-              </option>
-            </select>
+        <!-- Categoría -->
+        <div class="mb-3">
+          <label class="form-label">Categoría</label>
+          <select formControlName="categoriaId" class="form-select"
+                  [class.is-invalid]="form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched">
+            <option value="" disabled>Seleccione una categoría</option>
+            <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nombre }}</option>
+          </select>
+          <div *ngIf="form.get('categoriaId')?.invalid && form.get('categoriaId')?.touched" class="invalid-feedback">
+            Debe seleccionar una categoría
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Descripción</label>
-            <textarea formControlName="descripcion" class="form-control"></textarea>
+        <!-- Descripción -->
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea formControlName="descripcion" class="form-control"
+                    [class.is-invalid]="form.get('descripcion')?.invalid && form.get('descripcion')?.touched"></textarea>
+          <div *ngIf="form.get('descripcion')?.invalid && form.get('descripcion')?.touched" class="invalid-feedback">
+            <div *ngIf="form.get('descripcion')?.hasError('required')">La descripción es obligatoria</div>
+            <div *ngIf="form.get('descripcion')?.hasError('maxlength')">Máximo 500 caracteres</div>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="form-label">Foto URL</label>
-            <input formControlName="fotoUrl" class="form-control" />
+        <!-- Foto URL -->
+        <div class="mb-3">
+          <label class="form-label">Foto URL</label>
+          <input formControlName="fotoUrl" class="form-control"
+                [class.is-invalid]="form.get('fotoUrl')?.invalid && form.get('fotoUrl')?.touched" />
+          <div *ngIf="form.get('fotoUrl')?.invalid && form.get('fotoUrl')?.touched" class="invalid-feedback">
+            <div *ngIf="form.get('fotoUrl')?.hasError('required')">La foto es obligatoria</div>
+            <div *ngIf="form.get('fotoUrl')?.hasError('maxlength')">Máximo 300 caracteres</div>
           </div>
+        </div>
 
-          <div class="d-flex gap-2">
-            <button type="submit" class="btn btn-success">
-              {{ editing ? 'Actualizar' : 'Crear' }}
-            </button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          </div>
-        </form>
+        <!-- Botones -->
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-success" [disabled]="form.invalid">
+            {{ editing ? 'Actualizar' : 'Crear' }}
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        </div>
+      </form>
       </div>
     </div>
   </div>

@@ -26,6 +26,7 @@ export class RecipesListComponent implements OnInit {
   editing = false;
   editingId: number | null = null;
   loading = false;
+  selectedRecipe: any = null;
 
   constructor(
     private fb: FormBuilder,
@@ -43,8 +44,8 @@ export class RecipesListComponent implements OnInit {
       ingredientes: ['', Validators.required],
       tiempoPreparacion: [0, [Validators.required, Validators.min(1), Validators.max(1440)]],
       categoriaId: [null, Validators.required],
-      descripcion: ['', [Validators.maxLength(500)]],
-      fotoUrl: ['', [Validators.maxLength(300)]]
+      descripcion: ['', [Validators.required, Validators.maxLength(500)]],
+      fotoUrl: ['', [Validators.required, Validators.maxLength(300)]],
     });
   }
 
@@ -187,4 +188,8 @@ confirmDelete(recipe: Recipe): void {
   trackById(index: number, item: Recipe): number {
     return item.id;
   }
+
+  openPhoto(recipe: any) {
+  this.selectedRecipe = recipe;
+}
 }
