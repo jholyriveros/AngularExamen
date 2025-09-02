@@ -1,0 +1,99 @@
+<div class="container py-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">📂 Categorías</h2>
+    <button class="btn btn-primary" (click)="startCreate()">+ Nueva categoría</button>
+  </div>
+
+  <!-- Formulario -->
+  <div *ngIf="showForm" class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h5 class="card-title">
+        {{ editing ? 'Editar categoría' : 'Nueva categoría' }}
+      </h5>
+
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input formControlName="nombre" class="form-control" />
+          <div *ngIf="form.controls['nombre'].invalid && form.controls['nombre'].touched"
+               class="text-danger small mt-1">
+            Requerido
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" [disabled]="form.invalid" class="btn btn-success">
+            Guardar
+          </button>
+          <button type="button" (click)="cancel()" class="btn btn-secondary">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="text-center py-3">
+    <div class="spinner-border text-primary" role="status"></div>
+    <span class="ms-2">Cargando...</span>
+  </div>
+
+  <!-- Tabla -->
+  <div *ngIf="!loading" class="table-responsive">
+    <table class="table table-striped table-hover align-middle shadow-sm">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">ID</th>
+          <th scope="col">Nombre</th>
+          <th scope="col" class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cat of categorias; trackBy: trackById">
+          <td>{{ cat.id }}</td>
+          <td>{{ cat.nombre }}</td>
+          <td class="text-center">
+            <button class="btn btn-sm btn-outline-primary me-2"
+                    (click)="startEdit(cat)">
+              Editar
+            </button>
+            <button class="btn btn-sm btn-outline-danger"
+                  data-bs-toggle="modal"
+                  [attr.data-bs-target]="'#deleteModal' + cat.id">
+              Eliminar
+          </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div *ngFor="let cat of categorias" class="modal fade"
+     [id]="'deleteModal' + cat.id"
+     tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Confirmar eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        ¿Estás seguro que deseas eliminar la categoría 
+        <strong>{{ cat.nombre }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger"
+                (click)="confirmDelete(cat)"
+                data-bs-dismiss="modal">
+          Sí, eliminar
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

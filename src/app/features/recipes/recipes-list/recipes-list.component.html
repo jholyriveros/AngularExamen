@@ -1,0 +1,63 @@
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Recetas</h2>
+
+  <button (click)="startCreate()" class="mb-4 px-4 py-2 bg-blue-500 rounded">
+    Nueva Receta
+  </button>
+
+  <div *ngIf="loading">Cargando recetas...</div>
+  <div *ngIf="!loading && recipes.length === 0">No hay recetas.</div>
+
+  <ul *ngIf="!loading && recipes.length > 0" class="space-y-2">
+    <li *ngFor="let recipe of recipes; trackBy: trackById" class="p-3 border rounded">
+      <h3 class="font-semibold">{{ recipe.nombre }}</h3>
+      <p class="text-sm text-gray-600">Tiempo: {{ recipe.tiempoPreparacion }} min</p>
+      <div class="mt-2 space-x-2">
+        <button (click)="startEdit(recipe)" class="px-2 py-1 bg-yellow-500 rounded">Editar</button>
+        <button (click)="confirmDelete(recipe)" class="px-2 py-1 bg-red-500 rounded">Eliminar</button>
+      </div>
+    </li>
+  </ul>
+
+  <!-- Formulario -->
+  <div *ngIf="showForm" class="mt-6 p-4 border rounded bg-gray-50">
+    <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+      <div>
+        <label class="block">Nombre</label>
+        <input formControlName="nombre" class="border p-2 w-full" />
+      </div>
+
+      <div>
+        <label class="block">Ingredientes</label>
+        <textarea formControlName="ingredientes" class="border p-2 w-full"></textarea>
+      </div>
+
+      <div>
+        <label class="block">Tiempo preparación (min)</label>
+        <input type="number" formControlName="tiempoPreparacion" class="border p-2 w-full" />
+      </div>
+
+      <div>
+        <label class="block">Categoría ID</label>
+        <input type="number" formControlName="categoriaId" class="border p-2 w-full" />
+      </div>
+
+      <div>
+        <label class="block">Descripción</label>
+        <textarea formControlName="descripcion" class="border p-2 w-full"></textarea>
+      </div>
+
+      <div>
+        <label class="block">Foto URL</label>
+        <input formControlName="fotoUrl" class="border p-2 w-full" />
+      </div>
+
+      <div class="flex space-x-2">
+        <button type="submit" class="px-4 py-2 bg-green-600 rounded">
+          {{ editing ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button type="button" (click)="cancel()" class="px-4 py-2 bg-gray-500 rounded">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
