@@ -6,7 +6,7 @@ export interface Recipe {
   ingredientes: string;
   tiempoPreparacion: number;
   categoriaId: number;
-  categoria?: Categoria;   // 🔹 aquí agregamos la relación
+  categoria?: Categoria;
   descripcion?: string;
   fotoUrl?: string;
 }

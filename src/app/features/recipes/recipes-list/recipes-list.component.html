@@ -8,6 +8,24 @@
   <div *ngIf="loading" class="alert alert-info">Cargando recetas...</div>
   <div *ngIf="!loading && recipes.length === 0" class="alert alert-secondary">No hay recetas.</div>
 
+  <div class="row mb-3">
+    <div class="col-md-6 mb-2">
+      <input type="text" class="form-control" placeholder="Buscar por nombre..." [(ngModel)]="filterName"
+        (ngModelChange)="setPage(1)">
+    </div>
+    <div class="col-md-6 mb-2">
+      <select class="form-select" [(ngModel)]="filterCategoryId" (change)="setPage(1)">
+        <option value="">Todas las categorías</option>
+        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.nombre }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && recipes.length > 0" class="mb-2">
+    Registros: {{ filteredRecipes.length }} receta{{ filteredRecipes.length > 1 ? 's' : ''
+    }}
+  </div>
+
   <div *ngIf="!loading && recipes.length > 0" class="table-responsive">
     <table class="table table-bordered table-striped align-middle">
       <thead class="table-light">

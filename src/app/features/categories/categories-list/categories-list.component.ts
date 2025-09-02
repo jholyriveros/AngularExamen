@@ -5,6 +5,8 @@ import { Categoria } from '../models/categoria';
 import { CategoriaRequest } from '../models/categoria-request';
 import { CategoriaService } from '../services/categoria.service';
 import { ToastService } from '../../../services/toast.service';
+import { Recipe } from '../../recipes/models/recipe';
+import { RecipesService } from '../../recipes/services/recipes.service';
 
 @Component({
   selector: 'app-categories-list',
@@ -14,15 +16,18 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class CategoriesListComponent implements OnInit {
   categorias: Categoria[] = [];
+  recipes: Recipe[] = [];
   form!: FormGroup;
   showForm = false;
   editing = false;
   editingId: number | null = null;
   loading = false;
+  loadingRecipes = false;
 
   constructor(
     private fb: FormBuilder,
     private categoriaService: CategoriaService,
+    private recipesService: RecipesService,
     private toast: ToastService
   ) {}
 
@@ -119,4 +124,20 @@ export class CategoriesListComponent implements OnInit {
   trackById(index: number, item: Categoria): number {
     return item.id;
   }
+
+  loadRecipes(categoriaId: number): void {
+  this.loadingRecipes = true;
+  this.recipes = [];
+  this.recipesService.getByCategoriaId(categoriaId).subscribe({
+    next: r => {
+      this.recipes = r;
+      this.loadingRecipes = false;
+    },
+    error: err => {
+      console.error(err);
+      alert('Error al cargar recetas');
+      this.loadingRecipes = false;
+    }
+  });
+}
 }

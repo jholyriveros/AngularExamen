@@ -52,14 +52,25 @@
         <td class="text-center">{{ cat.id }}</td>
         <td>{{ cat.nombre }}</td>
         <td class="text-center">
-          <button class="btn btn-sm btn-warning me-2"
-                  (click)="startEdit(cat)">
-            Editar
+          <button class="btn btn-sm btn-info me-2"
+                  data-bs-toggle="modal"
+                  [attr.data-bs-target]="'#recipesModal' + cat.id"
+                  (click)="loadRecipes(cat.id)"
+                  title="Ver recetas">
+            <i class="bi-book"></i>
           </button>
+
+          <button (click)="startEdit(cat)" 
+                  class="btn btn-sm btn-warning me-2" 
+                  title="Editar">
+            <i class="bi bi-pencil-square"></i>
+          </button>
+
           <button class="btn btn-sm btn-danger"
                   data-bs-toggle="modal"
-                  [attr.data-bs-target]="'#deleteModal' + cat.id">
-            Eliminar
+                  [attr.data-bs-target]="'#deleteModal' + cat.id"
+                  title="Eliminar">
+            <i class="bi bi-trash"></i>
           </button>
         </td>
       </tr>
@@ -91,6 +102,39 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           Cancelar
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de recetas -->
+<div *ngFor="let cat of categorias" class="modal fade"
+     [id]="'recipesModal' + cat.id"
+     tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Recetas de {{ cat.nombre }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="loadingRecipes" class="text-center py-3">
+          <div class="spinner-border text-primary" role="status"></div>
+          <span class="ms-2">Cargando...</span>
+        </div>
+
+        <ul *ngIf="!loadingRecipes && recipes.length > 0" class="list-group">
+          <li *ngFor="let r of recipes" class="list-group-item">
+            {{ r.nombre }}
+          </li>
+        </ul>
+
+        <div *ngIf="!loadingRecipes && recipes.length === 0" class="text-muted">
+          No hay recetas para esta categoría.
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>

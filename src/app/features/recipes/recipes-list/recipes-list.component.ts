@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { Recipe } from '../models/recipe';
 import { RecipesService } from '../services/recipes.service';
@@ -12,7 +13,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'app-recipes-list',
   standalone: true,
-  imports: [ReactiveFormsModule, NgFor, NgIf],
+  imports: [ReactiveFormsModule, FormsModule, NgFor, NgIf],
   templateUrl: './recipes-list.component.html'
 })
 export class RecipesListComponent implements OnInit {
@@ -27,6 +28,8 @@ export class RecipesListComponent implements OnInit {
   editingId: number | null = null;
   loading = false;
   selectedRecipe: any = null;
+  filterName: string = '';
+  filterCategoryId: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -76,13 +79,33 @@ export class RecipesListComponent implements OnInit {
     });
   }
 
-  setPage(page: number): void {
-    if (page < 1 || page > this.totalPages) return;
-    this.page = page;
-    const start = (page - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    this.paginatedRecipes = this.recipes.slice(start, end);
-  }
+onFilterCategoryChange(event: any) {
+  this.filterCategoryId = event.target.value;
+  this.setPage(1);
+}
+
+get filteredRecipes(): Recipe[] {
+  const categoryId = this.filterCategoryId ? +this.filterCategoryId : null;
+  return this.recipes
+    .filter(r =>
+      (!this.filterName || r.nombre.toLowerCase().includes(this.filterName.toLowerCase())) &&
+      (!categoryId || r.categoriaId === categoryId)
+    );
+}
+
+setPage(page: number): void {
+  const filtered = this.filteredRecipes;
+  this.totalPages = Math.ceil(filtered.length / this.pageSize) || 1; 
+
+  if (page < 1) page = 1;
+  if (page > this.totalPages) page = this.totalPages;
+
+  this.page = page;
+
+  const start = (page - 1) * this.pageSize;
+  const end = start + this.pageSize;
+  this.paginatedRecipes = filtered.slice(start, end);
+}
 
   startCreate(): void {
     this.editing = false;
